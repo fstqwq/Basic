@@ -46,9 +46,10 @@ Statement *Program::getParsedStatement(int lineNumber) {
 }
 
 int Program::getFirstLineNumber() {
-   return 0;     // Replace this stub with your own code
+   if (src.begin() == src.end()) return -1;
+   return src.begin()->first;
 }
 
 int Program::getNextLineNumber(int lineNumber) {
-   return 0;     // Replace this stub with your own code
+   auto now = src.get
 }

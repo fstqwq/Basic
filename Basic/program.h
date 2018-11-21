@@ -136,9 +136,8 @@ public:
    int getNextLineNumber(int lineNumber);
 
 private:
-
-// Fill this in with whatever types and instance variables you need
-
+   EvalState eval;
+   Map<int, pair<std::string, Statement>> src;
 };
 
 #endif
