@@ -14,42 +14,69 @@
 using namespace std;
 
 Program::Program() {
-   // Replace this stub with your own code
+   // Empty
 }
 
 Program::~Program() {
-   // Replace this stub with your own code
+   clear();
 }
 
 void Program::clear() {
-   // Replace this stub with your own code
+   for (auto &i : src) {
+      delete i->second;
+   }
+   src.clear();
 }
 
 void Program::addSourceLine(int lineNumber, string line) {
-   // Replace this stub with your own code
+   removeSourceLine(lineNumber);
+   src[lineNumber] = std::make_pair(line, (Statement*)NULL);
 }
 
 void Program::removeSourceLine(int lineNumber) {
-   // Replace this stub with your own code
+   auto it = src.find(lineNumber);
+   if (it != src.end()) {
+      src.erase(it);
+   }
 }
 
 string Program::getSourceLine(int lineNumber) {
-   return "";    // Replace this stub with your own code
+   return src[lineNumber].first;
 }
 
 void Program::setParsedStatement(int lineNumber, Statement *stmt) {
-   // Replace this stub with your own code
+   auto it = src.find(lineNumber);
+   if (it != src.end()) {
+      delete it->second.second;
+      it->second.second = stmt;
+   }
 }
 
 Statement *Program::getParsedStatement(int lineNumber) {
-   return NULL;  // Replace this stub with your own code
+   return src[lineNumber].second;
 }
 
 int Program::getFirstLineNumber() {
-   if (src.begin() == src.end()) return -1;
+   if (src.empty()) return -1;
    return src.begin()->first;
 }
 
 int Program::getNextLineNumber(int lineNumber) {
-   auto now = src.get
+   auto now = src.find(lineNumber);
+   if (now == src.end()) return -1;
+   now++;
+   if (now == src.end()) return -1;
+   return now->first;
+}
+
+void Program::run() {
+   for (auto &i : src) {
+      i.second.second->execute(state);
+   }
+}
+
+void Program::list() {
+   for (auto &i : src) {
+      cout << i.second.first << endl;
+   }
 }

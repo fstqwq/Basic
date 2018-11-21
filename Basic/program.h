@@ -9,6 +9,7 @@
 #define _program_h
 
 #include <string>
+#include <map>
 #include "statement.h"
 using namespace std;
 
@@ -67,7 +68,7 @@ public:
  * program in the correct sequence.
  */
 
-   void addSourceLine(int lineNumber, std::string line);
+   void addSourceLine(int lineNumber, string line);
 
 /*
  * Method: removeSourceLine
@@ -89,7 +90,7 @@ public:
  * If no such line exists, this method returns the empty string.
  */
 
-   std::string getSourceLine(int lineNumber);
+   string getSourceLine(int lineNumber);
 
 /*
  * Method: setParsedStatement
@@ -135,9 +136,13 @@ public:
 
    int getNextLineNumber(int lineNumber);
 
+   void run();
+
+   void list();
+
 private:
-   EvalState eval;
-   Map<int, pair<std::string, Statement>> src;
+   EvalState state;
+   map<int, pair<string, Statement*>> src;
 };
 
 #endif
