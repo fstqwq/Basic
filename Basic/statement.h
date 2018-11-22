@@ -36,7 +36,7 @@ public:
  * its own constructor.
  */
 
-   Statement();
+    Statement();
 
 /*
  * Destructor: ~Statement
@@ -47,7 +47,7 @@ public:
  * destructor is called when deleting a statement.
  */
 
-   virtual ~Statement();
+    virtual ~Statement();
 
 /*
  * Method: execute
@@ -60,19 +60,46 @@ public:
  * controlling the operation of the interpreter.
  */
 
-   virtual void execute(EvalState & state) = 0;
+    virtual void execute(EvalState & state) = 0;
 
 };
 
-/*
- * The remainder of this file must consists of subclass
- * definitions for the individual statement forms.  Each of
- * those subclasses must define a constructor that parses a
- * statement from a scanner and a method called execute,
- * which executes that statement.  If the private data for
- * a subclass includes data allocated on the heap (such as
- * an Expression object), the class implementation must also
- * specify its own destructor method to free that memory.
- */
+class REM : Statement {
+public:
+    REM ();
+    virtual ~REM();
+    virtual void execute(EvalState & state);
+};
+
+class LET : Statement {
+public:
+    LET ();
+    LET (const string &var, Expression *expr);
+    virtual ~LET();
+    virtual void execute(EvalState & state);
+private:
+    string Var;
+    Expression *Expr;
+};
+
+class PRINT : Statement {
+public:
+    PRINT ();
+    PRINT (Expression *exp);
+    virtual ~PRINT();
+    virtual void execute(EvalState & state);
+private:
+    Expression *Expr;
+};
+
+class INPUT : Statement {
+public:
+    INPUT ();
+    INPUT (const string & var);
+    virtual ~INPUT();
+    virtual void execute(EvalState & state);
+private:
+    string Var;
+};
 
 #endif

@@ -40,7 +40,7 @@ int main() {
     while (true) {
         try {
             processLine(getLine(), program, state);
-        } catch (showErrorException& ex) {
+        } catch (ErrorException& ex) {
             cerr << "showError: " << ex.getMessage() << endl;
         }
     }
@@ -74,46 +74,45 @@ void processLine(string line, Program& program, EvalState& state) {
                 if (cmd == "RUN") {
                     if (scanner.hasMoreTokens()) {
                         error("SYNTAX ERROR");
-                        else {
-                            program.run();
-                        }
-                    } else if (cmd == "LIST") {
-                        if (scanner.hasMoreTokens()) {
-                            error("SYNTAX ERROR");
-                        } else {
-                            program.list();
-                        }
-                    } else if (cmd == "CLEAR") {
-                        if (scanner.hasMoreTokens()) {
-                            error("SYNTAX ERROR");
-                        } else {
-                            program.clear();
-                        }
-                    } else if (cmd == "QUIT") {
-                        if (scanner.hasMoreTokens()) {
-                            error("SYNTAX ERROR");
-                        } else {
-                            exit(0);
-                        }
-                    } else if (cmd == "HELP") {
-                        if (scanner.hasMoreTokens()) {
-                            error("SYNTAX ERROR");
-                        } else {
-                            showHelp();
-                        }
                     } else {
+                        program.run();
                     }
+                } else if (cmd == "LIST") {
+                    if (scanner.hasMoreTokens()) {
+                        error("SYNTAX ERROR");
+                    } else {
+                        program.list();
+                    }
+                } else if (cmd == "CLEAR") {
+                    if (scanner.hasMoreTokens()) {
+                        error("SYNTAX ERROR");
+                    } else {
+                        program.clear();
+                    }
+                } else if (cmd == "QUIT") {
+                    if (scanner.hasMoreTokens()) {
+                        error("SYNTAX ERROR");
+                    } else {
+                        exit(0);
+                    }
+                } else if (cmd == "HELP") {
+                    if (scanner.hasMoreTokens()) {
+                        error("SYNTAX ERROR");
+                    } else {
+                        showHelp();
+                    }
+                } else if (cmd == "PRINT") {
                 }
         }
     } catch (ErrorException& err) {
         showError(err.getMessage());
     }
-/*  // Useful sample
-    Expression* exp = parseExp(scanner);
-    int value = exp->eval(state);
-    cout << value << endl;
-    delete exp;
-*/
+    /*  // Useful sample
+        Expression* exp = parseExp(scanner);
+        int value = exp->eval(state);
+        cout << value << endl;
+        delete exp;
+    */
 }
 
 void showError(const string& msg) {

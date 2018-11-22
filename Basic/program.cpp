@@ -23,7 +23,7 @@ Program::~Program() {
 
 void Program::clear() {
    for (auto &i : src) {
-      delete i->second;
+      delete i.second.second;
    }
    src.clear();
 }
