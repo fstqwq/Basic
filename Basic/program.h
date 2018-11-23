@@ -136,12 +136,11 @@ public:
 
    int getNextLineNumber(int lineNumber);
 
-   void run();
+   void run(EvalState & state);
 
    void list();
 
 private:
-   EvalState state;
    map<int, pair<string, Statement*>> src;
 };
 

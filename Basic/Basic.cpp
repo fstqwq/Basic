@@ -28,6 +28,10 @@ const string help_msg = "Yet another basic interpreter by fstqwq";
 /* Function prototypes */
 
 void processLine(string line, Program& program, EvalState& state);
+void runImmediately(Program& program,
+                    EvalState& state,
+                    string& cmd,
+                    TokenScanner& scanner);
 void showError(const string& msg);
 void showHelp();
 
@@ -41,7 +45,7 @@ int main() {
         try {
             processLine(getLine(), program, state);
         } catch (ErrorException& ex) {
-            cerr << "showError: " << ex.getMessage() << endl;
+            showError(ex.getMessage());
         }
     }
     return 0;
@@ -65,47 +69,13 @@ void processLine(string line, Program& program, EvalState& state) {
     scanner.ignoreWhitespace();
     scanner.scanNumbers();
     scanner.setInput(line);
-    try {
-        string cmd = scanner.nextToken();
-        switch (scanner.getTokenType(cmd)) {
-            case TokenType(EOF):
-                break;
-            case TokenType(STRING):
-                if (cmd == "RUN") {
-                    if (scanner.hasMoreTokens()) {
-                        error("SYNTAX ERROR");
-                    } else {
-                        program.run();
-                    }
-                } else if (cmd == "LIST") {
-                    if (scanner.hasMoreTokens()) {
-                        error("SYNTAX ERROR");
-                    } else {
-                        program.list();
-                    }
-                } else if (cmd == "CLEAR") {
-                    if (scanner.hasMoreTokens()) {
-                        error("SYNTAX ERROR");
-                    } else {
-                        program.clear();
-                    }
-                } else if (cmd == "QUIT") {
-                    if (scanner.hasMoreTokens()) {
-                        error("SYNTAX ERROR");
-                    } else {
-                        exit(0);
-                    }
-                } else if (cmd == "HELP") {
-                    if (scanner.hasMoreTokens()) {
-                        error("SYNTAX ERROR");
-                    } else {
-                        showHelp();
-                    }
-                } else if (cmd == "PRINT") {
-                }
-        }
-    } catch (ErrorException& err) {
-        showError(err.getMessage());
+    string cmd = scanner.nextToken();
+    switch (scanner.getTokenType(cmd)) {
+        case TokenType(EOF):
+            break;
+        case TokenType(STRING):
+            runImmediately(program, state, cmd, scanner);
+        case TokenType(NUMBER):
     }
     /*  // Useful sample
         Expression* exp = parseExp(scanner);
@@ -113,6 +83,45 @@ void processLine(string line, Program& program, EvalState& state) {
         cout << value << endl;
         delete exp;
     */
+}
+
+void runImmediately(Program& program,
+                    EvalState& state,
+                    string& cmd,
+                    TokenScanner& scanner) {
+    if (cmd == "RUN") {
+        if (scanner.hasMoreTokens()) {
+            error("syntaxErr: Unexpected " + scanner.nextToken());
+        } else {
+            program.run(state);
+        }
+    } else if (cmd == "LIST") {
+        if (scanner.hasMoreTokens()) {
+            error("syntaxErr: Unexpected " + scanner.nextToken());
+        } else {
+            program.list();
+        }
+    } else if (cmd == "CLEAR") {
+        if (scanner.hasMoreTokens()) {
+            error("syntaxErr: Unexpected " + scanner.nextToken());
+        } else {
+            program.clear();
+            state.clear();
+        }
+    } else if (cmd == "QUIT") {
+        if (scanner.hasMoreTokens()) {
+            error("syntaxErr: Unexpected " + scanner.nextToken());
+        } else {
+            exit(0);
+        }
+    } else if (cmd == "HELP") {
+        if (scanner.hasMoreTokens()) {
+            error("syntaxErr: Unexpected " + scanner.nextToken());
+        } else {
+            showHelp();
+        }
+    } else if (cmd == "PRINT") {
+    }
 }
 
 void showError(const string& msg) {

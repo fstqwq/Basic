@@ -72,7 +72,7 @@ int Program::getNextLineNumber(int lineNumber) {
     return now->first;
 }
 
-void Program::run() {
+void Program::run(EvalState &state) {
     int line = getFirstLineNumber();
     while (line != -1) {
         if (src.find(line) == src.end()) {
