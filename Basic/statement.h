@@ -60,15 +60,14 @@ public:
  * controlling the operation of the interpreter.
  */
 
-    virtual void execute(EvalState & state) = 0;
-
+    virtual void execute(EvalState & state, int & nextline) = 0;
 };
 
 class REM : Statement {
 public:
     REM ();
     virtual ~REM();
-    virtual void execute(EvalState & state);
+    virtual void execute(EvalState & state, int & nextline);
 };
 
 class LET : Statement {
@@ -76,7 +75,7 @@ public:
     LET ();
     LET (const string &var, Expression *expr);
     virtual ~LET();
-    virtual void execute(EvalState & state);
+    virtual void execute(EvalState & state, int & nextline);
 private:
     string Var;
     Expression *Expr;
@@ -87,7 +86,7 @@ public:
     PRINT ();
     PRINT (Expression *exp);
     virtual ~PRINT();
-    virtual void execute(EvalState & state);
+    virtual void execute(EvalState & state, int & nextline);
 private:
     Expression *Expr;
 };
@@ -97,9 +96,38 @@ public:
     INPUT ();
     INPUT (const string & var);
     virtual ~INPUT();
-    virtual void execute(EvalState & state);
+    virtual void execute(EvalState & state, int & nextline);
 private:
     string Var;
+};
+
+class END : Statement {
+public:
+    END ();
+    virtual ~END();
+    virtual void execute(EvalState & state, int & nextline);
+};
+
+class GOTO : Statement {
+public:
+    GOTO ();
+    GOTO (int lineNumber);
+    virtual ~GOTO();
+    virtual void execute(EvalState & state, int & nextline);
+private:
+    int line;
+};
+
+class IF : Statement {
+public:
+    IF ();
+    IF (Expression *a, const string & op, Expression *b, int lineNumber);
+    virtual ~IF();
+    virtual void execute(EvalState & state, int & nextline);
+private:
+    Expression *A, *B;
+    string OP;
+    int line;
 };
 
 #endif
