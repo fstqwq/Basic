@@ -65,17 +65,19 @@ INPUT::INPUT (const string & var) {
 INPUT::~INPUT () {}
 
 void INPUT::execute(EvalState & state, int & nextline) {
-	cout << " ? ";
-	TokenScanner scanner;
-    scanner.ignoreWhitespace();
-    scanner.scanNumbers();
-    scanner.setInput(getLine());
-	string value = scanner.nextToken();
-	if (scanner.getTokenType(value) != TokenType(NUMBER)) {
-		error("invalidNumErr: " + value + " is not an integer");
+	bool read = 0;
+	int value = 0;
+	while (!read) {
+		try {
+			cout << " ? ";
+			value = stringToInteger(getLine());
+			read = 1;
+		}
+		catch (...) {
+			cout << "INVALID NUMBER" << endl;
+		}
 	}
-	checkEOLN(scanner);
-    state.setValue(Var, stringToInteger(value));
+    state.setValue(Var, value);
 }
 
 END::END () {}

@@ -91,9 +91,22 @@ bool isComparision(const string& op) {
 	return op == ">" || op == "<" || op == "=";
 }
 
+bool isValidVariableName(const string& name) {
+	if (TokenScanner().getTokenType(name) != TokenType(WORD)) return false;
+	if (name == "REM" ||
+		name == "LET" ||
+		name == "PRINT" ||
+		name == "INPUT" ||
+		name == "END" ||
+		name == "GOTO" ||
+		name == "IF")
+		return false;
+	return true;
+}
+
 string readVar(TokenScanner& scanner) {
     string varName = scanner.nextToken();
-    if (scanner.getTokenType(varName) != TokenType(WORD)) error("syntaxErr: Illegal variable name");
+    if (!isValidVariableName(varName)) error("syntaxErr: Illegal variable name");
 	return varName;
 }
 
@@ -138,7 +151,7 @@ Statement* readPRINT(TokenScanner &scanner) {
 }
 
 Statement* readINPUT(TokenScanner &scanner) {
-    string varName = scanner.nextToken();
+    string varName = readVar(scanner);
 	checkEOLN(scanner);
 	return new INPUT(varName);
 }

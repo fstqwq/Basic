@@ -56,6 +56,8 @@ int precedence(std::string token);
 
 bool isComparision();
 
+bool isValidVariableName(const string& name);
+
 string readVar(TokenScanner& scanner);
 
 int readInt(TokenScanner& scanner);

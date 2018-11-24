@@ -30,7 +30,7 @@ const string help_msg = "Yet another basic interpreter by fstqwq";
 void processLine(string line, Program& program, EvalState& state);
 void runImmediately(Program& program, EvalState& state, const string& cmd,
                     TokenScanner& scanner);
-void addStatement(Program& program, EvalState& state, const int lineNumber,
+void modifyStatement(Program& program, EvalState& state, const int lineNumber,
                   const string& line, TokenScanner& scanner);
 void showError(const string& msg);
 void showHelp();
@@ -40,7 +40,6 @@ void showHelp();
 int main() {
     EvalState state;
     Program program;
-    cout << "Stub implementation of BASIC" << endl;
     while (true) {
         try {
             processLine(getLine(), program, state);
@@ -77,7 +76,7 @@ void processLine(string line, Program& program, EvalState& state) {
             runImmediately(program, state, cmd, scanner);
             break;
         case TokenType(NUMBER):
-            addStatement(program, state, stringToInteger(cmd), line, scanner);
+            modifyStatement(program, state, stringToInteger(cmd), line, scanner);
             break;
         default:
             error("syntaxErr: Unrecognized input : " + cmd);
@@ -111,11 +110,16 @@ void runImmediately(Program& program, EvalState& state, const string& cmd,
     }
 }
 
-void addStatement(Program& program, EvalState& state, const int lineNumber,
+void modifyStatement(Program& program, EvalState& state, const int lineNumber,
                   const string& line, TokenScanner& scanner) {
-	Statement* stmt = readStatement(scanner.nextToken(), scanner);
-	program.addSourceLine(lineNumber, line);
-	program.setParsedStatement(lineNumber, stmt);
+	if (!scanner.hasMoreTokens()) {
+		program.removeSourceLine(lineNumber);
+	}
+	else {
+		Statement* stmt = readStatement(scanner.nextToken(), scanner);
+		program.addSourceLine(lineNumber, line);
+		program.setParsedStatement(lineNumber, stmt);
+	}
 }
 
 void showError(const string& msg) {
@@ -128,7 +132,7 @@ void showError(const string& msg) {
 	else if (errType == "lineNumErr") errMsg = "LINE NUMBER ERROR";
 	else errMsg = "SYNTAX ERROR";
 
-//	cerr << msg << endl;
+	cerr << msg << endl;
 	cout << errMsg << endl;
 }
 
