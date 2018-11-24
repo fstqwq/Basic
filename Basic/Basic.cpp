@@ -73,7 +73,7 @@ void processLine(string line, Program& program, EvalState& state) {
     switch (scanner.getTokenType(cmd)) {
         case TokenType(EOF):
             break;
-        case TokenType(STRING):
+        case TokenType(WORD):
             runImmediately(program, state, cmd, scanner);
             break;
         case TokenType(NUMBER):
@@ -128,6 +128,7 @@ void showError(const string& msg) {
 	else if (errType == "lineNumErr") errMsg = "LINE NUMBER ERROR";
 	else errMsg = "SYNTAX ERROR";
 
+//	cerr << msg << endl;
 	cout << errMsg << endl;
 }
 
