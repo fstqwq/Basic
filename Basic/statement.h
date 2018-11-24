@@ -63,14 +63,14 @@ public:
     virtual void execute(EvalState & state, int & nextline) = 0;
 };
 
-class REM : Statement {
+class REM : public Statement {
 public:
     REM ();
     virtual ~REM();
     virtual void execute(EvalState & state, int & nextline);
 };
 
-class LET : Statement {
+class LET : public Statement {
 public:
     LET ();
     LET (const string &var, Expression *expr);
@@ -81,7 +81,7 @@ private:
     Expression *Expr;
 };
 
-class PRINT : Statement {
+class PRINT : public Statement {
 public:
     PRINT ();
     PRINT (Expression *exp);
@@ -91,7 +91,7 @@ private:
     Expression *Expr;
 };
 
-class INPUT : Statement {
+class INPUT : public Statement {
 public:
     INPUT ();
     INPUT (const string & var);
@@ -101,14 +101,14 @@ private:
     string Var;
 };
 
-class END : Statement {
+class END : public Statement {
 public:
     END ();
     virtual ~END();
     virtual void execute(EvalState & state, int & nextline);
 };
 
-class GOTO : Statement {
+class GOTO : public Statement {
 public:
     GOTO ();
     GOTO (int lineNumber);
@@ -118,10 +118,10 @@ private:
     int line;
 };
 
-class IF : Statement {
+class IF : public Statement {
 public:
     IF ();
-    IF (Expression *a, const string & op, Expression *b, int lineNumber);
+    IF (Expression *lhs, const string & op, Expression *rhs, int lineNumber);
     virtual ~IF();
     virtual void execute(EvalState & state, int & nextline);
 private:

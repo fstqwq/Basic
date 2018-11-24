@@ -4,11 +4,11 @@
  * Implements the parser.h interface.
  */
 
+#include "parser.h"
+#include <cctype>
 #include <iostream>
 #include <string>
-
 #include "exp.h"
-#include "parser.h"
 
 #include "../StanfordCPPLib/error.h"
 #include "../StanfordCPPLib/strlib.h"
@@ -21,12 +21,12 @@ using namespace std;
  * This code just reads an expression and then checks for extra tokens.
  */
 
-Expression *parseExp(TokenScanner & scanner) {
-   Expression *exp = readE(scanner);
-   if (scanner.hasMoreTokens()) {
-      error("parseExp: Found extra token: " + scanner.nextToken());
-   }
-   return exp;
+Expression *parseExp(TokenScanner &scanner) {
+    Expression *exp = readE(scanner);
+    if (scanner.hasMoreTokens()) {
+        error("parseExp: Found extra token: " + scanner.nextToken());
+    }
+    return exp;
 }
 
 /*
@@ -40,18 +40,18 @@ Expression *parseExp(TokenScanner & scanner) {
  * readE calls itself recursively to read in that subexpression as a unit.
  */
 
-Expression *readE(TokenScanner & scanner, int prec) {
-   Expression *exp = readT(scanner);
-   string token;
-   while (true) {
-      token = scanner.nextToken();
-      int newPrec = precedence(token);
-      if (newPrec <= prec) break;
-      Expression *rhs = readE(scanner, newPrec);
-      exp = new CompoundExp(token, exp, rhs);
-   }
-   scanner.saveToken(token);
-   return exp;
+Expression *readE(TokenScanner &scanner, int prec) {
+    Expression *exp = readT(scanner);
+    string token;
+    while (true) {
+        token = scanner.nextToken();
+        int newPrec = precedence(token);
+        if (newPrec <= prec) break;
+        Expression *rhs = readE(scanner, newPrec);
+        exp = new CompoundExp(token, exp, rhs);
+    }
+    scanner.saveToken(token);
+    return exp;
 }
 
 /*
@@ -61,17 +61,17 @@ Expression *readE(TokenScanner & scanner, int prec) {
  * or a parenthesized subexpression.
  */
 
-Expression *readT(TokenScanner & scanner) {
-   string token = scanner.nextToken();
-   TokenType type = scanner.getTokenType(token);
-   if (type == WORD) return new IdentifierExp(token);
-   if (type == NUMBER) return new ConstantExp(stringToInteger(token));
-   if (token != "(") error("Illegal term in expression");
-   Expression *exp = readE(scanner);
-   if (scanner.nextToken() != ")") {
-      error("Unbalanced parentheses in expression");
-   }
-   return exp;
+Expression *readT(TokenScanner &scanner) {
+    string token = scanner.nextToken();
+    TokenType type = scanner.getTokenType(token);
+    if (type == WORD) return new IdentifierExp(token);
+    if (type == NUMBER) return new ConstantExp(stringToInteger(token));
+    if (token != "(") error("syntaxErr: Illegal term in expression");
+    Expression *exp = readE(scanner);
+    if (scanner.nextToken() != ")") {
+        error("syntaxErr: Unbalanced parentheses in expression");
+    }
+    return exp;
 }
 
 /*
@@ -82,8 +82,85 @@ Expression *readT(TokenScanner & scanner) {
  */
 
 int precedence(string token) {
-   if (token == "=") return 1;
-   if (token == "+" || token == "-") return 2;
-   if (token == "*" || token == "/") return 3;
-   return 0;
+    if (token == "+" || token == "-") return 2;
+    if (token == "*" || token == "/") return 3;
+    return 0;
+}
+
+bool isComparision(const string& op) {
+	return op == ">" || op == "<" || op == "=";
+}
+
+string readVar(TokenScanner& scanner) {
+    string varName = scanner.nextToken();
+    if (scanner.getTokenType(varName) != TokenType(WORD)) error("syntaxErr: Illegal variable name");
+	return varName;
+}
+
+int readInt(TokenScanner& scanner) {
+	string value = scanner.nextToken();
+	if (scanner.getTokenType(value) != TokenType(NUMBER))
+		error("syntaxErr: Not an integer : " + value);
+	return stringToInteger(value);
+}
+
+void checkEOLN(TokenScanner& scanner) {
+    if (scanner.hasMoreTokens())
+        error("syntaxErr: Extra infomation at end of line");
+}
+
+Statement* readStatement(const string &cmd, TokenScanner &scanner) {
+    if (cmd == "REM") return readREM(scanner);
+    if (cmd == "LET") return readLET(scanner);
+    if (cmd == "PRINT") return readPRINT(scanner);
+    if (cmd == "INPUT") return readINPUT(scanner);
+    if (cmd == "END") return readEND(scanner);
+    if (cmd == "GOTO") return readGOTO(scanner);
+    if (cmd == "IF") return readIF(scanner);
+	error("syntaxErr: Invalid command : " + cmd);
+	return NULL;
+}
+
+Statement* readREM(TokenScanner &scanner) { return new REM(); }
+
+Statement* readLET(TokenScanner &scanner) {
+	string varName = readVar(scanner);
+    if (scanner.nextToken() != "=") error("syntanErr: Illegal assignment");
+    Expression *Expr = readE(scanner);
+	checkEOLN(scanner);
+    return new LET(varName, Expr);
+}
+
+Statement* readPRINT(TokenScanner &scanner) {
+    Expression *Expr = readE(scanner);
+	checkEOLN(scanner);
+    return new PRINT(Expr);
+}
+
+Statement* readINPUT(TokenScanner &scanner) {
+    string varName = scanner.nextToken();
+	checkEOLN(scanner);
+	return new INPUT(varName);
+}
+
+Statement* readEND(TokenScanner& scanner) {
+	checkEOLN(scanner);
+	return new END();
+}
+
+Statement* readGOTO(TokenScanner& scanner) {
+	int lineNumber = readInt(scanner);
+	checkEOLN(scanner);
+	return new GOTO(lineNumber);
+}
+
+Statement* readIF(TokenScanner& scanner) {
+	Expression *lhs = readE(scanner);
+	string op = scanner.nextToken();
+	if (op != "=" && op != ">" && op != "<") error("syntaxErr: Expected a comparision operator, recieved " + op);
+	Expression *rhs = readE(scanner);
+	if (scanner.nextToken() != "THEN") error("syntaxErr: Expected THEN");
+	int lineNumber = readInt(scanner);
+	checkEOLN(scanner);
+	return new IF(lhs, op, rhs, lineNumber);
 }

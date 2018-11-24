@@ -76,7 +76,7 @@ void Program::run(EvalState &state) {
     int line = getFirstLineNumber();
     while (line != -1) {
         if (src.find(line) == src.end()) {
-            error("LINE NUMBER ERROR");
+            error("lineNumErr: " + to_string(line) + " line dosen't exist");
         }
         int nextline = getNextLineNumber(line);
         src.find(line)->second.second->execute(state, nextline);

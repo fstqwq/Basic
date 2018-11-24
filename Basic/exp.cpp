@@ -4,10 +4,10 @@
  * This file implements the Expression class and its subclasses.
  */
 
+#include "exp.h"
 #include <string>
 #include "../StanfordCPPLib/error.h"
 #include "evalstate.h"
-#include "exp.h"
 
 #include "../StanfordCPPLib/strlib.h"
 
@@ -19,13 +19,9 @@ using namespace std;
  * The Expression class declares no instance variables and needs no code.
  */
 
-Expression::Expression() {
-   /* Empty */
-}
+Expression::Expression() { /* Empty */ }
 
-Expression::~Expression() {
-   /* Empty */
-}
+Expression::~Expression() { /* Empty */ }
 
 /*
  * Implementation notes: the ConstantExp subclass
@@ -35,25 +31,15 @@ Expression::~Expression() {
  * value of state but needs it to match the general prototype for eval.
  */
 
-ConstantExp::ConstantExp(int value) {
-   this->value = value;
-}
+ConstantExp::ConstantExp(int value) { this->value = value; }
 
-int ConstantExp::eval(EvalState & state) {
-   return value;
-}
+int ConstantExp::eval(EvalState &state) { return value; }
 
-string ConstantExp::toString() {
-   return integerToString(value);
-}
+string ConstantExp::toString() { return integerToString(value); }
 
-ExpressionType ConstantExp::getType() {
-   return CONSTANT;
-}
+ExpressionType ConstantExp::getType() { return CONSTANT; }
 
-int ConstantExp::getValue() {
-   return value;
-}
+int ConstantExp::getValue() { return value; }
 
 /*
  * Implementation notes: the IdentifierExp subclass
@@ -63,44 +49,36 @@ int ConstantExp::getValue() {
  * look this variable up in the evaluation state.
  */
 
-IdentifierExp::IdentifierExp(string name) {
-   this->name = name;
+IdentifierExp::IdentifierExp(string name) { this->name = name; }
+
+int IdentifierExp::eval(EvalState &state) {
+    if (!state.isDefined(name)) error("undefinedVariable: " + name + " is undefined");
+    return state.getValue(name);
 }
 
-int IdentifierExp::eval(EvalState & state) {
-   if (!state.isDefined(name)) error(name + " is undefined");
-   return state.getValue(name);
-}
+string IdentifierExp::toString() { return name; }
 
-string IdentifierExp::toString() {
-   return name;
-}
+ExpressionType IdentifierExp::getType() { return IDENTIFIER; }
 
-ExpressionType IdentifierExp::getType() {
-   return IDENTIFIER;
-}
-
-string IdentifierExp::getName() {
-   return name;
-}
+string IdentifierExp::getName() { return name; }
 
 /*
  * Implementation notes: the CompoundExp subclass
  * ----------------------------------------------
  * The CompoundExp subclass declares instance variables for the operator
- * and the left and right subexpressions.  The implementation of eval 
+ * and the left and right subexpressions.  The implementation of eval
  * evaluates the subexpressions recursively and then applies the operator.
  */
 
 CompoundExp::CompoundExp(string op, Expression *lhs, Expression *rhs) {
-   this->op = op;
-   this->lhs = lhs;
-   this->rhs = rhs;
+    this->op = op;
+    this->lhs = lhs;
+    this->rhs = rhs;
 }
 
 CompoundExp::~CompoundExp() {
-   delete lhs;
-   delete rhs;
+    delete lhs;
+    delete rhs;
 }
 
 /*
@@ -111,41 +89,30 @@ CompoundExp::~CompoundExp() {
  * the assignment operator does not evaluate its left operand.
  */
 
-int CompoundExp::eval(EvalState & state) {
-   if (op == "=") {
-      if (lhs->getType() != IDENTIFIER) {
-         error("Illegal variable in assignment");
-      }
-      int val = rhs->eval(state);
-      state.setValue(((IdentifierExp *) lhs)->getName(), val);
-      return val;
-   }
-   int left = lhs->eval(state);
-   int right = rhs->eval(state);
-   if (op == "+") return left + right;
-   if (op == "-") return left - right;
-   if (op == "*") return left * right;
-   if (op == "/") return left / right;
-   error("Illegal operator in expression");
-   return 0;
+int CompoundExp::eval(EvalState &state) {
+    int left = lhs->eval(state);
+    int right = rhs->eval(state);
+    if (op == "+") return left + right;
+    if (op == "-") return left - right;
+    if (op == "*") return left * right;
+    if (op == "/") {
+		if (right == 0) {
+			error("arithmeticErr: Divided by zero");
+		}
+        return left / right;
+    }
+    error("syntaxErr: Illegal operator in expression");
+    return 0;
 }
 
 string CompoundExp::toString() {
-   return '(' + lhs->toString() + ' ' + op + ' ' + rhs->toString() + ')';
+    return '(' + lhs->toString() + ' ' + op + ' ' + rhs->toString() + ')';
 }
 
-ExpressionType CompoundExp::getType() {
-   return COMPOUND;
-}
+ExpressionType CompoundExp::getType() { return COMPOUND; }
 
-string CompoundExp::getOp() {
-   return op;
-}
+string CompoundExp::getOp() { return op; }
 
-Expression *CompoundExp::getLHS() {
-   return lhs;
-}
+Expression *CompoundExp::getLHS() { return lhs; }
 
-Expression *CompoundExp::getRHS() {
-   return rhs;
-}
+Expression *CompoundExp::getRHS() { return rhs; }

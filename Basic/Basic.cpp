@@ -28,10 +28,10 @@ const string help_msg = "Yet another basic interpreter by fstqwq";
 /* Function prototypes */
 
 void processLine(string line, Program& program, EvalState& state);
-void runImmediately(Program& program,
-                    EvalState& state,
-                    string& cmd,
+void runImmediately(Program& program, EvalState& state, const string& cmd,
                     TokenScanner& scanner);
+void addStatement(Program& program, EvalState& state, const int lineNumber,
+                  const string& line, TokenScanner& scanner);
 void showError(const string& msg);
 void showHelp();
 
@@ -75,59 +75,60 @@ void processLine(string line, Program& program, EvalState& state) {
             break;
         case TokenType(STRING):
             runImmediately(program, state, cmd, scanner);
+            break;
         case TokenType(NUMBER):
+            addStatement(program, state, stringToInteger(cmd), line, scanner);
+            break;
+        default:
+            error("syntaxErr: Unrecognized input : " + cmd);
     }
-    /*  // Useful sample
-        Expression* exp = parseExp(scanner);
-        int value = exp->eval(state);
-        cout << value << endl;
-        delete exp;
-    */
 }
 
-void runImmediately(Program& program,
-                    EvalState& state,
-                    string& cmd,
+void runImmediately(Program& program, EvalState& state, const string& cmd,
                     TokenScanner& scanner) {
     if (cmd == "RUN") {
-        if (scanner.hasMoreTokens()) {
-            error("syntaxErr: Unexpected " + scanner.nextToken());
-        } else {
-            program.run(state);
-        }
+        checkEOLN(scanner);
+        program.run(state);
     } else if (cmd == "LIST") {
-        if (scanner.hasMoreTokens()) {
-            error("syntaxErr: Unexpected " + scanner.nextToken());
-        } else {
-            program.list();
-        }
+        checkEOLN(scanner);
+        program.list();
     } else if (cmd == "CLEAR") {
-        if (scanner.hasMoreTokens()) {
-            error("syntaxErr: Unexpected " + scanner.nextToken());
-        } else {
-            program.clear();
-            state.clear();
-        }
+        checkEOLN(scanner);
+        program.clear();
+        state.clear();
     } else if (cmd == "QUIT") {
-        if (scanner.hasMoreTokens()) {
-            error("syntaxErr: Unexpected " + scanner.nextToken());
-        } else {
-            exit(0);
-        }
+        checkEOLN(scanner);
+        exit(0);
     } else if (cmd == "HELP") {
-        if (scanner.hasMoreTokens()) {
-            error("syntaxErr: Unexpected " + scanner.nextToken());
-        } else {
-            showHelp();
-        }
-    } else if (cmd == "PRINT") {
+        checkEOLN(scanner);
+        showHelp();
+    } else if (cmd == "PRINT" || cmd == "INPUT" || cmd == "LET") {
+        Statement* line = readStatement(cmd, scanner);
+        int tmpProgramNextLine = -1;
+        line->execute(state, tmpProgramNextLine);
+    } else {
+        error("syntaxErr:  Invalid command: " + cmd);
     }
+}
+
+void addStatement(Program& program, EvalState& state, const int lineNumber,
+                  const string& line, TokenScanner& scanner) {
+	Statement* stmt = readStatement(scanner.nextToken(), scanner);
+	program.addSourceLine(lineNumber, line);
+	program.setParsedStatement(lineNumber, stmt);
 }
 
 void showError(const string& msg) {
-    cout << msg << endl;
+	TokenScanner scanner;
+    scanner.setInput(msg);
+	string errType = scanner.nextToken(), errMsg = "";
+		 if (errType == "arithmeticErr") errMsg = "DIVIDE BY ZERO";
+	else if (errType == "invalidNumErr") errMsg = "INVALID NUMBER";
+	else if (errType == "undefinedVariable") errMsg = "VARIABLE NOT DEFINED";
+	else if (errType == "lineNumErr") errMsg = "LINE NUMBER ERROR";
+	else errMsg = "SYNTAX ERROR";
+
+	cout << errMsg << endl;
 }
 
-void showHelp() {
-    cout << help_msg << endl;
-}
+void showHelp() { cout << help_msg << endl; }

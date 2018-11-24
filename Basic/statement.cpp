@@ -9,6 +9,10 @@
 
 #include "statement.h"
 #include <string>
+#include "parser.h"
+
+#include "../StanfordCPPLib/simpio.h"
+
 using namespace std;
 
 Statement::Statement() {}
@@ -61,9 +65,17 @@ INPUT::INPUT (const string & var) {
 INPUT::~INPUT () {}
 
 void INPUT::execute(EvalState & state, int & nextline) {
-    int value;
-    cin >> value;
-    state.setValue(Var, value);
+	cout << " ? ";
+	TokenScanner scanner;
+    scanner.ignoreWhitespace();
+    scanner.scanNumbers();
+    scanner.setInput(getLine());
+	string value = scanner.nextToken();
+	if (scanner.getTokenType(value) != TokenType(NUMBER)) {
+		error("invalidNumErr: " + value + " is not an integer");
+	}
+	checkEOLN(scanner);
+    state.setValue(Var, stringToInteger(value));
 }
 
 END::END () {}
@@ -88,9 +100,9 @@ void GOTO::execute(EvalState & state, int & nextline) {
 
 IF::IF() {}
 
-IF::IF (Expression *a, const string & op, Expression *b, int lineNumber) {
-    A = a;
-    B = b;
+IF::IF (Expression *lhs, const string & op, Expression *rhs, int lineNumber) {
+    A = lhs;
+    B = rhs;
     OP = op;
     line = lineNumber;
 }

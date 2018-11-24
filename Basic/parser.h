@@ -9,7 +9,7 @@
 
 #include <string>
 #include "exp.h"
-
+#include "statement.h"
 #include "../StanfordCPPLib/tokenscanner.h"
 
 /*
@@ -53,5 +53,29 @@ Expression *readT(TokenScanner & scanner);
  */
 
 int precedence(std::string token);
+
+bool isComparision();
+
+string readVar(TokenScanner& scanner);
+
+int readInt(TokenScanner& scanner);
+
+void checkEOLN(TokenScanner& scanner);
+
+Statement* readStatement(const string& cmd, TokenScanner& scanner);
+
+Statement* readREM(TokenScanner &s);
+
+Statement* readLET(TokenScanner &s);
+
+Statement* readPRINT(TokenScanner &s);
+
+Statement* readINPUT(TokenScanner &s);
+
+Statement* readEND(TokenScanner &s);
+
+Statement* readGOTO(TokenScanner &s);
+
+Statement* readIF(TokenScanner &s);
 
 #endif
